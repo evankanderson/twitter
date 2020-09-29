@@ -34,8 +34,12 @@ func receive(event cloudevents.Event) {
 		return
 	}
 
-	client.Statuses.Update("Hey, I added a caption", &twitter.StatusUpdateParams{MediaIds: []int64{result.MediaID}})
-
+	tweet, resp, err := client.Statuses.Update("Hey, I added a caption", &twitter.StatusUpdateParams{MediaIds: []int64{result.MediaID}})
+	if err != nil || resp.StatusCode >= 400 {
+		log.Printf("Unable to updat status aka tweek (%d): %s", resp.StatusCode, err)
+		return
+	}
+	log.Printf("Sent tweet %s with media %d", tweet.IDStr, result.MediaID)
 }
 
 func main() {

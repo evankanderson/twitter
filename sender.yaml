@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tweet-sender
+spec:
+  selector:
+    matchLabels:
+      app: tweet-sender
+  template:
+    metadata:
+      labels:
+        app: tweet-sender
+    spec:
+      containers:
+      - name: myapp
+        image: ko://github.com/vaikas/twitter/cmd/sender
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+        - name: TWITTER_CONSUMER_KEY
+          valueFrom:
+            secretKeyRef:
+              name: twitter-secret
+              key: consumer-key
+        - name: TWITTER_CONSUMER_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: twitter-secret
+              key: consumer-secret-key
+        - name: TWITTER_ACCESS_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: twitter-secret
+              key: access-token
+        - name: TWITTER_ACCESS_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: twitter-secret
+              key: access-secret
+        - name: PORT
+          value: '8080'
+        ports:
+        - containerPort: 8080
+          name: sender
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tweet-sender
+spec:
+  selector:
+    app: tweet-sender
+  ports:
+  - port: 80
+    targetPort: sender
